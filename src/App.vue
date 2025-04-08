@@ -280,6 +280,20 @@ function generateJSONSchema(structure, parentPath = '') {
 // 添加新元素
 function addItem(parentPath = []) {
   if (!newItemName.value) return
+  // 检查名称是否已存在
+  const existingItem = jsonStructure.value.find(item => item.name === newItemName.value)
+  if (existingItem) {
+    alert(`名称 "${newItemName.value}" 已存在，请使用其他名称`)
+    newItemName.value = ""
+    return
+  }
+  // 验证名称是否符合要求 字母开头，只能包含字母、数字、下划线
+  const namePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/
+  if (!namePattern.test(newItemName.value)) {
+    alert(`${newItemName.value} 无效, 只能以字母开头，并且只能包含字母、数字和下划线`)
+    newItemName.value = ""
+    return
+  }
   
   const newItem = {
     name: newItemName.value,
@@ -416,7 +430,7 @@ function canAddChildren(item) {
 // 获取当前编辑路径的显示名称
 function getEditingPathName() {
   if (!selectedPath.value || selectedPath.value.length === 0) {
-    return '根级'
+    return null
   }
   
   let names = []
@@ -539,7 +553,7 @@ function getDepthClass(depth) {
             :class="{ active: activeTab === 'openai' }"
             @click="activeTab = 'openai'"
           >
-            OpenAI 使用示例
+            OpenAI Example
           </div>
         </div>
         
@@ -555,15 +569,16 @@ function getDepthClass(depth) {
               <span>使用方法示例</span>
             </div>
             <pre class="code-sample">
-const response = await openai.chat.completions.create({
-  model: "gpt-3.5-turbo",
+const json_schema = {{JSON.stringify(openaiSchema, null, 2)}}
+const response = await openai.beta.chat.completions.parse({
+  model: "gpt-4o-mini",
   messages: [
-    { role: "system", content: "你是一个有用的助手。" },
-    { role: "user", content: "生成数据" }
+    { role: "system", content: "You are a helpful assistant." },
+    { role: "user", content: "Generate a mock data." }
   ],
-  response_format: { 
-    type: "json_object", 
-    schema: {{JSON.stringify(openaiSchema, null, 2)}}
+  response_format: {
+    type: "json_schema", 
+    json_schema
   }
 });</pre>
           </div>
@@ -603,6 +618,7 @@ h1 {
   display: flex;
   min-height: 500px;
   justify-content: space-around;
+  height: calc(100vh - 20px);
 }
 
 .structure-panel, .output-panel {

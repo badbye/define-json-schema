@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <rect x="16" y="16" width="224" height="224" rx="12" fill="#f7df1e" />
+  <g fill="#323330" font-family="Consolas, Monaco, 'Andale Mono', monospace" font-size="72" font-weight="bold">
+    <text x="40" y="106">{"</text>
+    <text x="40" y="166">}</text>
+  </g>
+  <path d="M180 84 C200 100, 200 120, 180 136" stroke="#323330" stroke-width="10" fill="none" />
+  <path d="M180 156 C200 140, 200 120, 180 104" stroke="#323330" stroke-width="10" fill="none" />
+</svg>
