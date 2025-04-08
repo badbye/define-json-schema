@@ -125,7 +125,20 @@ function generateZodSchema(structure) {
               : z.array(z.object({})).optional()
           }
         } else {
-          const arrayZodType = getZodTypeForPrimitive(arrayType)
+          var arrayZodType = getZodTypeForPrimitive(arrayType)
+          if (arrayType === 'enum') {
+            const values = item.enumValues.split(',').map(v => v.trim()).filter(v => v)
+            if (values.length > 0) {
+                arrayZodType = item.required 
+              ? z.enum(values) 
+              : z.enum(values).optional()
+            } else {
+              // 如果没有有效的枚举值，则使用字符串类型代替
+              arrayZodType = item.required 
+                ? z.string() 
+                : z.string().optional()
+            }
+          }
           schemaProps[item.name] = item.required 
             ? z.array(arrayZodType) 
             : z.array(arrayZodType).optional()
@@ -306,7 +319,7 @@ function addItem(parentPath = []) {
     newItem.children = []
   } else if (newItemType.value === 'array[object]') {
     newItem.children = []
-  } else if (newItemType.value === 'enum') {
+  } else if (newItemType.value === 'enum' || newItemType.value === 'array[enum]') {
     newItem.enumValues = enumValues.value
   }
 
@@ -485,10 +498,11 @@ function getDepthClass(depth) {
               <option value="array[number]">数字数组 (array[number])</option>
               <option value="array[integer]">整数数组 (array[integer])</option>
               <option value="array[boolean]">布尔值数组 (array[boolean])</option>
+              <option value="array[enum]">枚举数组 (array[enum])</option>
               <option value="array[object]">对象数组 (array[object])</option>
             </select>
           </div>
-          <div class="form-row" v-if="newItemType === 'enum'">
+          <div class="form-row" v-if="newItemType === 'enum' || newItemType === 'array[enum]'">
             <label>枚举值:</label>
             <input type="text" v-model="enumValues" placeholder="逗号分隔的枚举值" />
           </div>
