@@ -6,13 +6,19 @@
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
       </svg>
     </button>
+    <message-toast ref="toast" message="已复制到剪贴板" type="success" :duration="2000" />
     <pre class="json-output">{{ formattedJson }}</pre>
   </div>
 </template>
 
 <script>
+import MessageToast from './MessageToast.vue';
+
 export default {
   name: 'JsonViewer',
+  components: {
+    MessageToast
+  },
   props: {
     data: {
       type: [Object, Array, String],
@@ -33,12 +39,14 @@ export default {
     copyToClipboard() {
       navigator.clipboard.writeText(this.formattedJson)
         .then(() => {
-          // 可以添加复制成功提示
-          alert('已复制到剪贴板');
+          // 使用自定义组件显示提示，自动消失
+          this.$refs.toast.show();
         })
         .catch(err => {
           console.error('复制失败:', err);
-          alert('复制失败，请手动选择并复制');
+          this.$refs.toast.message = '复制失败，请手动选择并复制';
+          this.$refs.toast.type = 'error';
+          this.$refs.toast.show();
         });
     }
   }

@@ -1,15 +1,13 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
-import Ajv from 'ajv'
 import * as z from 'zod'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import TreeItem from './components/TreeItem.vue'
 import JsonViewer from './components/JsonViewer.vue'
-
-// 初始化JSON schema生成器
-const ajv = new Ajv({ allErrors: true })
+import MessageToast from './components/MessageToast.vue';
 
 // 定义状态
+const warning = ref(null)
 const jsonStructure = ref([
   { 
     name: 'user',
@@ -296,14 +294,16 @@ function addItem(parentPath = []) {
   // 检查名称是否已存在
   const existingItem = jsonStructure.value.find(item => item.name === newItemName.value)
   if (existingItem) {
-    alert(`名称 "${newItemName.value}" 已存在，请使用其他名称`)
+    warning.value.localMessage = `名称 "${newItemName.value}" 已存在，请使用其他名称`;
+    warning.value.show();
     newItemName.value = ""
     return
   }
   // 验证名称是否符合要求 字母开头，只能包含字母、数字、下划线
   const namePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/
   if (!namePattern.test(newItemName.value)) {
-    alert(`${newItemName.value} 无效, 只能以字母开头，并且只能包含字母、数字和下划线`)
+    warning.value.localMessage = `${newItemName.value} 无效, 只能以字母开头，并且只能包含字母、数字和下划线`;
+    warning.value.show();
     newItemName.value = ""
     return
   }
@@ -475,8 +475,7 @@ function getDepthClass(depth) {
 
 <template>
   <div class="container">
-    <!-- <p class="description">定义JSON结构，自动生成OpenAI structured output的JSON Schema</p> -->
-    
+    <message-toast ref="warning" type="error" :duration="3000" />    
     <div class="app-container">
       <!-- 左侧：JSON结构定义 -->
       <div class="structure-panel">
@@ -560,7 +559,14 @@ function getDepthClass(depth) {
             :class="{ active: activeTab === 'zod' }"
             @click="activeTab = 'zod'"
           >
-            JSON Schema
+            OpenAI Schema
+          </div>
+          <div 
+            class="tab" 
+            :class="{ active: activeTab === 'gemini' }"
+            @click="activeTab = 'gemini'"
+          >
+            Gemini Schema
           </div>
           <div 
             class="tab" 
@@ -575,6 +581,10 @@ function getDepthClass(depth) {
           <!-- Zod Schema Tab -->
           <div v-if="activeTab === 'zod'" class="schema-output">
             <JsonViewer :data="zodOpenaiSchema" />
+          </div>
+
+          <div v-if="activeTab === 'gemini'" class="schema-output">
+            <JsonViewer :data="generatedSchema" />
           </div>
           
           <!-- OpenAI 使用示例 Tab -->
